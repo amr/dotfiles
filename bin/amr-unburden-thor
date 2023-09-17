@@ -1,0 +1,12 @@
+#!/bin/bash
+
+set -x
+
+# Stop deployments I don't need for consumer-auth
+kubectl delete deployment ml-serving-rpc2  ml-serving-celery-worker ml-serving-web card-processor-rpc2 card-processor-web pricing-rpc2 pricing-web pba-celery-worker pba-web partner-api-celery-worker partner-api-web originations-rpc2
+
+# Prune docker
+./amr-docker-prune
+
+# Remove excess logs
+sudo journalctl --vacuum-size=500M
