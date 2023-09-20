@@ -1,0 +1,46 @@
+#!/bin/bash
+#
+# Get k8s pod logs by specifying a service name.
+#
+# Usage:
+#
+#  k-service-logs monolith-rpc2
+#
+# You can also pass any arguments accepted by kubectl logs after --, for example to follow logs:
+#
+#  k-service-logs monolith-rpc2 -- -f
+#
+
+if [ "$#" -lt 1 ]; then
+    echo "Usage: $0 <service_name> [-- extra_kubectl_args]"
+    exit 1
+fi
+
+SERVICE_NAME="$1"
+shift
+
+# If there's a "--" in the arguments, split arguments
+if [[ "$@" == *--* ]]; then
+    ARGS_BEFORE_DOUBLE_DASH="${*%%--*}"
+    ARGS_AFTER_DOUBLE_DASH="${*#*--}"
+else
+    ARGS_AFTER_DOUBLE_DASH=""
+fi
+
+# Fetch pods belonging to the service
+PODS=$(kubectl get pods --selector=garden.io/service="$SERVICE_NAME" -o jsonpath='{.items[*].metadata.name}')
+
+# Convert PODS to array
+POD_ARRAY=($PODS)
+
+if [ ${#POD_ARRAY[@]} -gt 1 ]; then
+    echo "Error: Found multiple pods for service '$SERVICE_NAME'. This script is designed to work with a single pod. For fetching logs from multiple pods, consider using more advanced tools or scripts."
+    exit 2
+elif [ ${#POD_ARRAY[@]} -eq 0 ]; then
+    echo "Error: No pods found for service '$SERVICE_NAME'."
+    exit 3
+fi
+
+POD="${POD_ARRAY[0]}"
+echo "Fetching logs for pod: $POD"
+kubectl logs $POD $ARGS_AFTER_DOUBLE_DASH

@@ -1,8 +1,10 @@
 #!/bin/bash
 
-# I use Kitty, and this does away with some annoying errors I keep getting
-# due to xterm-kitty terminfo missing by default.
-sudo apt-get install kitty-terminfo
+# kitty-terminfo: installs xterm-kitty terminfo, better support for Kitty terminal 
+# kubetail: convenient tool to view k8s logs
+DEBIAN_FRONTEND=noninteractive sudo apt-get install -y \
+  kitty-terminfo \
+  kubetail
 
 # Where are we?
 dotfs=$(cd "$(dirname $0)" && pwd)
